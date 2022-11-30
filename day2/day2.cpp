@@ -3,7 +3,7 @@
 int main() {
   std::ifstream input {"input.txt"};
   if (!input) {
-    std::cerr << "Fail to open input file\n";
+    std::cerr << "Failed to open input file\n";
     return 1;
   }
   std::string line;
