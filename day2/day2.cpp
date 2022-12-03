@@ -1,12 +1,9 @@
-#include <array>
 #include <fstream>
 #include <iostream>
 #include <string>
 
-static const std::array<std::string, 2> input_files {"sample.txt", "input.txt"};
-
 int main() {
-    for (const auto& file : input_files) {
+    for (auto file : {"sample.txt", "input.txt"}) {
         std::ifstream input {file};
         if (!input) {
             std::cerr << "Failed to open: " << file << '\n';
