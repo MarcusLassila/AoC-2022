@@ -15,7 +15,7 @@ int main() {
         std::vector<int> data = {0};
         std::string line;
         while (std::getline(input, line)) {
-            if (!line.length())
+            if (line.empty())
                 data.push_back(0);
             else
                 data.back() += std::stoi(line);
