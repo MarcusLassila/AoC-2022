@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <set>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 
 int main() {
     for (auto file : {"sample.txt", "input.txt"}) {
@@ -18,14 +18,14 @@ int main() {
         int score_one = 0;
         int score_two = 0;
         int line_num  = 0;
-        std::unordered_map<char, int> counter;
+        std::map<char, int> counter;
         std::string line;
         while (std::getline(input, line)) {
-            for (char x : std::unordered_set<char>{line.begin(), line.end()}) {
+            for (char x : std::set<char>{line.begin(), line.end()}) {
                 ++counter[x];
             }
             unsigned int half_len = line.length() / 2;
-            std::unordered_set<char> fst {line.begin(), line.begin() + half_len};
+            std::set<char> fst {line.begin(), line.begin() + half_len};
             char item = *std::find_if(line.begin() + half_len, line.end(), [&fst](char item) -> bool {
                 return fst.count(item);
             });
