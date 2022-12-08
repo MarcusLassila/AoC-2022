@@ -1,14 +1,13 @@
-#include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
-int part_one(const std::vector<std::vector<int>>& grid) {
+int part_one(const std::vector<std::string>& grid) {
     int M = grid.size();
     int N = grid.front().size();
-    std::set<int> seen;
+    std::unordered_set<int> seen;
     const auto flatten = [N](int row, int col) -> int {
         return row * N + col;
     };
@@ -54,7 +53,7 @@ int part_one(const std::vector<std::vector<int>>& grid) {
     return seen.size();
 }
 
-int part_two(const std::vector<std::vector<int>>& grid) {
+int part_two(const std::vector<std::string>& grid) {
     int M = grid.size();
     int N = grid.front().size();
     
@@ -109,13 +108,9 @@ int main() {
             return 1;
         }
         std::string line;
-        std::vector<std::vector<int>> grid;
+        std::vector<std::string> grid;
         while (std::getline(input, line)) {
-            std::vector<int> row;
-            std::transform(line.begin(), line.end(), std::back_inserter(row), [](const char x) -> int {
-                return static_cast<int>(x - '0');
-            });
-            grid.push_back(row);
+            grid.push_back(line);
         }
         std::cout << file << ":\n";
         std::cout << "Answer part 1:  " << part_one(grid) << '\n';
