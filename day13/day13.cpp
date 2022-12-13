@@ -1,8 +1,8 @@
 #include <algorithm>
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -11,9 +11,11 @@
 
 struct RecursiveVector {
     std::optional<int> data;
-    std::vector<RecursiveVector> vec;
+    std::vector<RecursiveVector> subvector;
+
     RecursiveVector() {}
     RecursiveVector(int data) : data(std::make_optional<int>(data)) {}
+    RecursiveVector(const std::vector<RecursiveVector>& subvector) : subvector(subvector) {}
 
     friend std::ostream& operator<<(std::ostream& os, const RecursiveVector& rv);
 };
@@ -23,11 +25,11 @@ std::ostream& operator<<(std::ostream& os, const RecursiveVector& rv) {
         os << rv.data.value();
     } else {
         os << '[';
-        for (std::size_t i = 0; i + 1 < rv.vec.size(); ++i) {
-            os << rv.vec[i] << ',';
+        for (std::size_t i = 0; i + 1 < rv.subvector.size(); ++i) {
+            os << rv.subvector[i] << ',';
         }
-        if (!rv.vec.empty()) {
-            os << rv.vec.back();
+        if (!rv.subvector.empty()) {
+            os << rv.subvector.back();
         }
         os  << ']';
     }
@@ -38,21 +40,19 @@ bool operator==(const RecursiveVector& a, const RecursiveVector& b) {
     if (a.data && b.data) {
         return a.data.value() == b.data.value();
     } else if (a.data) {
-        RecursiveVector wrapper;
-        wrapper.vec.emplace_back(RecursiveVector{a.data.value()});
-        return wrapper == b;
+        auto wrapped = RecursiveVector{std::vector<RecursiveVector>{a.data.value()}};
+        return wrapped == b;
     } else if (b.data) {
-        RecursiveVector wrapper;
-        wrapper.vec.emplace_back(RecursiveVector{b.data.value()});
-        return a == wrapper;
+        auto wrapped = RecursiveVector{std::vector<RecursiveVector>{b.data.value()}};
+        return a == wrapped;
     } else {
-        std::size_t n = std::min(a.vec.size(), b.vec.size());
+        std::size_t n = std::min(a.subvector.size(), b.subvector.size());
         for (std::size_t i = 0; i < n; ++i) {
-            if (!(a.vec[i] == b.vec[i])) {
+            if (!(a.subvector[i] == b.subvector[i])) {
                 return false;
             }
         }
-        return a.vec.size() == b.vec.size();
+        return a.subvector.size() == b.subvector.size();
     }
 }
 
@@ -60,23 +60,21 @@ bool operator<(const RecursiveVector& a, const RecursiveVector& b) {
     if (a.data && b.data) {
         return a.data.value() < b.data.value();
     } else if (a.data) {
-        RecursiveVector wrapper;
-        wrapper.vec.emplace_back(RecursiveVector{a.data.value()});
-        return wrapper < b;
+        auto wrapped = RecursiveVector{std::vector<RecursiveVector>{a.data.value()}};
+        return wrapped < b;
     } else if (b.data) {
-        RecursiveVector wrapper;
-        wrapper.vec.emplace_back(RecursiveVector{b.data.value()});
-        return a < wrapper;
+        auto wrapped = RecursiveVector{std::vector<RecursiveVector>{b.data.value()}};
+        return a < wrapped;
     } else {
-        std::size_t n = std::min(a.vec.size(), b.vec.size());
+        std::size_t n = std::min(a.subvector.size(), b.subvector.size());
         for (std::size_t i = 0; i < n; ++i) {
-            if (a.vec[i] < b.vec[i]) {
+            if (a.subvector[i] < b.subvector[i]) {
                 return true;
-            } else if (!(a.vec[i] == b.vec[i])) {
+            } else if (!(a.subvector[i] == b.subvector[i])) {
                 return false;
             }
         }
-        return a.vec.size() < b.vec.size();
+        return a.subvector.size() < b.subvector.size();
     }
 }
 
@@ -84,31 +82,32 @@ RecursiveVector parse_list(std::string_view list) {
     std::vector<RecursiveVector> stk = {RecursiveVector{}};
     std::string num;
 
+    const auto push_num = [&stk](auto& num) -> void {
+        if (!num.empty()) {
+            stk.back().subvector.emplace_back(RecursiveVector{std::stoi(num)});
+            num.clear();
+        }
+    };
+
     for (char tok : list) {
         switch (tok) {
             case '[':
                 stk.emplace_back(RecursiveVector{});
                 break;
             case ']':
-                if (!num.empty()) {
-                    stk.back().vec.emplace_back(RecursiveVector{std::stoi(num)});
-                    num.clear();
-                }
-                stk[stk.size() - 2].vec.push_back(stk.back());
+                push_num(num);
+                stk[stk.size() - 2].subvector.push_back(stk.back());
                 stk.pop_back();
                 break;
             case ',':
-                if (!num.empty()) {
-                    stk.back().vec.emplace_back(RecursiveVector{std::stoi(num)});
-                    num.clear();
-                }
+                push_num(num);
                 break;
             default:
                 num.push_back(tok);
                 break;
         }
     }
-    return stk.back().vec.back();
+    return stk.back().subvector.back();
 }
 
 int main() {
@@ -118,40 +117,30 @@ int main() {
             std::cerr << "Failed to open: " << file << '\n';
             return 1;
         }
-        std::vector<RecursiveVector> lists;
+        std::vector<RecursiveVector> rvs;
         std::string line;
-        for (int i = 0; std::getline(input, line); ++i) {
-            if (i % 3 == 2) {
+        while (std::getline(input, line)) {
+            if (line.empty()) {
                 continue;  
             }
-            lists.emplace_back(parse_list(line));
+            rvs.emplace_back(parse_list(line));
         }
         unsigned int sum = 0;
-        for (std::size_t i = 0; i < lists.size(); i += 2) {
-            if (lists[i] < lists[i + 1]) {
+        for (unsigned int i = 0; i < rvs.size(); i += 2) {
+            if (rvs[i] < rvs[i + 1]) {
                 sum += (i + 2) / 2;
             }
         }
-        RecursiveVector dp1;
-        RecursiveVector dp2;
-        dp1.vec.emplace_back(RecursiveVector{});
-        dp2.vec.emplace_back(RecursiveVector{});
-        dp1.vec.back().vec.emplace_back(RecursiveVector{2});
-        dp2.vec.back().vec.emplace_back(RecursiveVector{6});
-        lists.push_back(dp1);
-        lists.push_back(dp2);
-        std::sort(lists.begin(), lists.end());
-        std::size_t idx1 = 0, idx2 = 0;
-        for (std::size_t k = 0; k < lists.size(); k++) {
-            if (lists[k] == dp1) {
-                idx1 = k + 1;
-            } else if (lists[k] == dp2) {
-                idx2 = k + 1;
-            }
-        }
+        auto divider_packet_1 = RecursiveVector{std::vector<RecursiveVector>{RecursiveVector{2}}};
+        auto divider_packet_2 = RecursiveVector{std::vector<RecursiveVector>{RecursiveVector{6}}};
+        rvs.push_back(divider_packet_1);
+        rvs.push_back(divider_packet_2);
+        std::sort(rvs.begin(), rvs.end());
+        auto idx_1 = std::distance(rvs.begin(), std::find(rvs.begin(), rvs.end(), divider_packet_1)) + 1;
+        auto idx_2 = std::distance(rvs.begin(), std::find(rvs.begin(), rvs.end(), divider_packet_2)) + 1;
         std::cout << file << ":\n";
         std::cout << "Answer part 1:  " << sum << '\n';
-        std::cout << "Answer part 2:  " << idx1 * idx2 << '\n';
+        std::cout << "Answer part 2:  " << idx_1 * idx_2 << '\n';
     }
     return 0;
 }
