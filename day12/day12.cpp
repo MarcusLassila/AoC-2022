@@ -5,7 +5,6 @@
 #include <iostream>
 #include <limits>
 #include <queue>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -26,10 +25,6 @@ bool operator==(const Point& p, const Point& q) {
     return p.x == q.x && p.y == q.y;
 }
 
-bool operator<(const Point& p, const Point& q) {
-    return p.x < q.x || (p.x == q.x && p.y < q.y);
-}
-
 Point operator+(const Point& p, const Point& q) {
     return {p.x + q.x, p.y + q.y};
 }
@@ -37,8 +32,8 @@ Point operator+(const Point& p, const Point& q) {
 static const std::array<Point, 4> directions {{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}}; 
 
 std::size_t shortest_path(const std::vector<std::string>& grid, const Point& start, const Point& dest) {
-    int num_rows = grid.size();
-    int num_cols = grid.front().size();
+    int num_rows = static_cast<int>(grid.size());
+    int num_cols = static_cast<int>(grid.front().size());
     std::size_t path_length = std::numeric_limits<std::size_t>::max();  // return max size if no path is found
 
     const auto in_range = [&grid, num_cols, num_rows](const Point& p) -> bool {
@@ -49,7 +44,7 @@ std::size_t shortest_path(const std::vector<std::string>& grid, const Point& sta
         return grid[p.x][p.y] + 1 >= grid[q.x][q.y];
     };
 
-    std::set<Point> visited;
+    auto visited = std::vector<std::vector<bool>>(num_rows, std::vector<bool>(num_cols, false));
     std::queue<std::pair<std::size_t, Point>> todo;
     todo.emplace(std::make_pair(0, start));
 
@@ -60,10 +55,10 @@ std::size_t shortest_path(const std::vector<std::string>& grid, const Point& sta
             path_length = d;
             break;
         }
-        if (visited.count(p)) {
+        if (visited[p.x][p.y]) {
             continue;
         }
-        visited.insert(p);
+        visited[p.x][p.y] = true;
         for (const auto& move : directions) {
             Point q = p + move;
             if (in_range(q) && in_reach(p, q)) {
@@ -89,8 +84,8 @@ int main() {
         Point start;
         Point dest;
         std::vector<Point> low_points;
-        for (std::size_t i = 0; i < grid.size(); ++i) {
-            for (std::size_t j = 0; j < grid.front().size(); ++j) {
+        for (int i = 0; i < static_cast<int>(grid.size()); ++i) {
+            for (int j = 0; j < static_cast<int>(grid.front().size()); ++j) {
                 switch (grid[i][j]) {
                     case 'S':
                         grid[i][j] = 'a';
