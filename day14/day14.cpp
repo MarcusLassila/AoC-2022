@@ -1,11 +1,12 @@
 #include <algorithm>
 #include <array>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <iterator>
-#include <set>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 struct Point {
@@ -37,10 +38,6 @@ bool operator!=(const Point& p, const Point& q) {
     return !(p == q);
 }
 
-bool operator<(const Point& p, const Point& q) {
-    return p.x < q.x || (p.x == q.x && p.y < q.y);
-}
-
 Point operator+(const Point& p, const Point& q) {
     return Point(p.x + q.x, p.y + q.y);
 }
@@ -49,13 +46,18 @@ Point operator-(const Point& p, const Point& q) {
     return Point(p.x - q.x, p.y - q.y);
 }
 
-int sign(int x) {
-    return (x > 0) - (x < 0);
-}
+template<>
+struct std::hash<Point> {  // https://en.cppreference.com/w/cpp/utility/hash
+    std::size_t operator()(Point const& p) const noexcept {
+        std::size_t h1 = std::hash<int>{}(p.x);
+        std::size_t h2 = std::hash<int>{}(p.y);
+        return h1 ^ (h2 << 1);
+    }
+};
 
 class SandDropper {
 public:
-    SandDropper(const std::set<Point>& obstacles) : m_obstacles(obstacles) {
+    SandDropper(const std::unordered_set<Point>& obstacles) : m_obstacles(obstacles) {
         m_floor = 2 + std::max_element(obstacles.begin(), obstacles.end(), [](const auto& a, const auto& b) -> bool {
             return a.y < b.y;
         })->y;
@@ -72,8 +74,8 @@ private:
     static const inline std::array<Point, 3> steps {{{0, 1}, {-1, 1}, {1, 1}}};
     static const inline Point drop_point {500, 0};
 
-    std::set<Point> m_obstacles;
-    std::set<Point> m_filled;
+    std::unordered_set<Point> m_obstacles;
+    std::unordered_set<Point> m_filled;
     int m_floor;
 
     void drop_until_done(bool has_floor);
@@ -109,8 +111,11 @@ void SandDropper::drop_until_done(bool has_floor) {
     }
 }
 
-std::set<Point> parse_path(const std::string& line) {
-    std::set<Point> ret;
+std::unordered_set<Point> parse_path(const std::string& line) {
+    std::unordered_set<Point> ret;
+    const auto sign = [](int v) -> int {
+        return (v > 0) - (v < 0);
+    };
     std::istringstream iss {line};
     int x, y;
     std::string arrow;
@@ -136,11 +141,11 @@ int main() {
             std::cerr << "Failed to open: " << file << '\n';
             return 1;
         }
-        std::set<Point> obstacles;
+        std::unordered_set<Point> obstacles;
         std::string line;
         while (std::getline(input, line)) {
             std::replace(line.begin(), line.end(), ',', ' ');
-            std::set<Point> points = parse_path(line);
+            std::unordered_set<Point> points = parse_path(line);
             obstacles.insert(points.begin(), points.end());
         }
         std::cout << file << ":\n";
