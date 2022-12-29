@@ -67,6 +67,8 @@ public:
         : m_grid(grid)
         , m_instructions(instructions)
         {}
+    virtual ~AbstractMonkeyMap() = default;
+
     char at(const Point& coord) const { return m_grid[coord.x][coord.y]; }
     virtual Position march(const Position& pos, int steps) const = 0;
     int trace_path() const;
