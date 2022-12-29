@@ -212,18 +212,17 @@ void Simulator::drop(const Rock& rock_inp) {
 }
 
 void Simulator::find_cycle() {
-    std::set<std::array<int, simulator_width + 2>> seen;  // Rock index, move index and relative height levels
+    using Key = std::array<int, simulator_width + 2>; // Rock index, move index and relative height levels
+    std::set<Key> seen;
     Point start_indices;
     unsigned int i = 0;
     while (true) {
         drop(rocks[i % rocks.size()]);
-        std::array<int, 9> key;
+        Key key;
         key[0] = static_cast<int>(i % rocks.size());
         key[1] = static_cast<int>(m_move_idx);
-        std::array<int, 7> levels = relative_levels();
-        for (int k = 0; k < simulator_width; ++k) {
-            key[k + 2] = levels[k];
-        }
+        std::array<int, simulator_width> levels = relative_levels();
+        std::copy(levels.begin(), levels.end(), key.begin() + 2);
         if (key[0] == 0 && seen.count(key)) {
             m_cycle_start_idx = i;
             start_indices = Point(key[0], key[1]);
@@ -249,7 +248,7 @@ void Simulator::find_cycle() {
 }
 
 /* Used for finding the cycle */
-std::array<int, 7> Simulator::relative_levels() const {
+std::array<int, simulator_width> Simulator::relative_levels() const {
     std::array<int, simulator_width> levels;
     levels.fill(0);
     for (const auto& p : m_occupied) {
@@ -273,8 +272,7 @@ std::ostream& operator<<(std::ostream& os, const Simulator& sim) {
     return os;
 }
 
-unsigned long long compute_height(std::string_view moves, unsigned long long drops) {
-    Simulator sim {moves};
+unsigned long long compute_height(Simulator& sim, unsigned long long drops) {
     const auto& [start, len] = sim.periodicity();
     if (drops <= start + len) {
         sim.drop_rocks(static_cast<unsigned int>(drops));
@@ -311,8 +309,9 @@ int main() {
         std::cout << sim << '\n';
         sim.reset();
 
-        unsigned long long ans_one = compute_height(moves, 2022);
-        unsigned long long ans_two = compute_height(moves, 1000000000000);
+        unsigned long long ans_one = compute_height(sim, 2022);
+        sim.reset();
+        unsigned long long ans_two = compute_height(sim, 1000000000000);
 
         std::cout << file << ":\n";
         std::cout << "Answer part 1:  " << ans_one << '\n';
