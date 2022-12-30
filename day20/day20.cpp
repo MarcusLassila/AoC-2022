@@ -26,7 +26,7 @@ T groove_sum(const std::vector<T>& encr, std::size_t iterations) {
 
     std::vector<std::pair<std::size_t, T>> vec;
     for (std::size_t i = 0; i < n; ++i) {
-        vec.emplace_back(std::make_pair(i, encr[i]));
+        vec.emplace_back(i, encr[i]);
     }
     for (std::size_t k = 0; k < iterations; ++k) {
         for (std::size_t i = 0; i < n; ++i) {

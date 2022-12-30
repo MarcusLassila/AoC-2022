@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <cctype>
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -36,7 +38,7 @@ int main() {
             std::cerr << "Failed to open: " << file << '\n';
             return 1;
         }
-        int num_stacks = 0;
+        std::size_t num_stacks = 0;
         std::string line;
         std::getline(input, line);
         num_stacks = (line.size() + 1) / 4;
@@ -58,7 +60,7 @@ int main() {
             std::string redundant;
             int n, a, b;
             iss >> redundant >> n >> redundant >> a >> redundant >> b;
-            moves.emplace_back(std::make_tuple(n, a - 1, b - 1));
+            moves.emplace_back(n, a - 1, b - 1);
         }
         std::cout << file << ":\n";
         std::cout << "Answer part 1:  " << solve(stacks, moves, false) << '\n';

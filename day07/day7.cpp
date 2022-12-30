@@ -41,7 +41,7 @@ private:
 };
 
 void Directory::add_subdirectory(const std::string& name) {
-    m_subdirs.emplace_back(std::make_unique<Directory>(name, this));
+    m_subdirs.push_back(std::make_unique<Directory>(name, this));
 }
 
 void Directory::add_subdirectory(std::unique_ptr<Directory> subdir_ptr) {

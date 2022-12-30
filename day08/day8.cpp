@@ -7,8 +7,8 @@
 #include <vector>
 
 int part_one(const std::vector<std::string>& grid) {
-    int M = grid.size();
-    int N = grid.front().size();
+    int M = static_cast<int>(grid.size());
+    int N = static_cast<int>(grid.front().size());
     int top = 0;
     std::unordered_set<int> seen;
 
@@ -49,12 +49,12 @@ int part_one(const std::vector<std::string>& grid) {
         }
     }
 
-    return seen.size();
+    return static_cast<int>(seen.size());
 }
 
 int part_two(const std::vector<std::string>& grid) {
-    int M = grid.size();
-    int N = grid.front().size();
+    int M = static_cast<int>(grid.size());
+    int N = static_cast<int>(grid.front().size());
 
     const auto evaluate = [&](const auto& coord) -> char {
         const auto& [row, col] = coord;
@@ -86,7 +86,7 @@ int part_two(const std::vector<std::string>& grid) {
     const auto first_not_smaller = [&](int row, int col, auto& stk, auto&& length_callback) -> int {
         pop_while_smaller(grid[row][col], stk);
         int ret = length_callback(stk);
-        stk.emplace(std::make_pair(row, col));
+        stk.emplace(row, col);
         return ret;
     };
 
@@ -94,12 +94,12 @@ int part_two(const std::vector<std::string>& grid) {
     
     for (int i = 0; i < M; ++i) {
         std::stack<std::pair<int, int>> stk;
-        stk.emplace(std::make_pair(i, 0));
+        stk.emplace(i, 0);
         for (int j = 1; j < N; ++j) {
             scenic_table[i][j] *= first_not_smaller(i, j, stk, [&](auto& stk){ return length_left(j, stk); });
         }
         stk = {};
-        stk.emplace(std::make_pair(i, N - 1));
+        stk.emplace(i, N - 1);
         for (int j = N - 2; j >= 0; --j) {
             scenic_table[i][j] *= first_not_smaller(i, j, stk, [&](auto& stk){ return length_right(j, stk); });
         }
@@ -107,12 +107,12 @@ int part_two(const std::vector<std::string>& grid) {
 
     for (int j = 0; j < N; ++j) {
         std::stack<std::pair<int, int>> stk;
-        stk.emplace(std::make_pair(0, j));
+        stk.emplace(0, j);
         for (int i = 1; i < M; ++i) {
             scenic_table[i][j] *= first_not_smaller(i, j, stk, [&](auto& stk){ return length_down(i, stk); });
         }
         stk = {};
-        stk.emplace(std::make_pair(M - 1, j));
+        stk.emplace(M - 1, j);
         for (int i = M - 2; i >= 0; --i) {
             scenic_table[i][j] *= first_not_smaller(i, j, stk, [&](auto& stk){ return length_up(i, stk); });
         }

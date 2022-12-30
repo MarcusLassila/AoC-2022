@@ -180,7 +180,7 @@ unsigned int BlizzardBasin::shortest_path_time(unsigned int initial_time,
 
     auto seen = std::vector(time_cycle, std::vector(M, std::vector(N, false)));
     std::queue<std::pair<unsigned int, Point>> todo;
-    todo.emplace(std::make_pair(initial_time, start));
+    todo.emplace(initial_time, start);
 
     while (!todo.empty()) {
         const auto& [t, p] = todo.front();
@@ -196,12 +196,12 @@ unsigned int BlizzardBasin::shortest_path_time(unsigned int initial_time,
         }
         unsigned int tt = t + 1;
         if (m_grid[tt % time_cycle][x][y] == '.') {
-            todo.emplace(std::make_pair(tt, p));
+            todo.emplace(tt, p);
         }
         for (const auto& [_, dp]: directions) {
             const auto& [u, v] = p + dp;
             if (0 <= u && u < M && 0 <= v && v < N && m_grid[tt % time_cycle][u][v] == '.') {
-                todo.emplace(std::make_pair(tt, Point{u, v}));
+                todo.emplace(tt, Point{u, v});
             }
         }
     }

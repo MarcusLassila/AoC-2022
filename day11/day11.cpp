@@ -65,7 +65,7 @@ int main() {
             std::string word;
             iss >> word;
             if (word == "Monkey") {
-                monkeys.emplace_back(Monkey<ull>{});
+                monkeys.emplace_back();
             } else if (word == "Starting") {
                 iss >> word;  // read with:
                 ull x;

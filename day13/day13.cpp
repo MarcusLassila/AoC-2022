@@ -84,7 +84,7 @@ RecursiveVector parse_list(std::string_view list) {
 
     const auto push_num = [&stk](auto& num) -> void {
         if (!num.empty()) {
-            stk.back().subvector.emplace_back(RecursiveVector{std::stoi(num)});
+            stk.back().subvector.emplace_back(std::stoi(num));
             num.clear();
         }
     };
@@ -92,7 +92,7 @@ RecursiveVector parse_list(std::string_view list) {
     for (char tok : list) {
         switch (tok) {
             case '[':
-                stk.emplace_back(RecursiveVector{});
+                stk.emplace_back();
                 break;
             case ']':
                 push_num(num);
@@ -123,7 +123,7 @@ int main() {
             if (line.empty()) {
                 continue;  
             }
-            rvs.emplace_back(parse_list(line));
+            rvs.push_back(parse_list(line));
         }
         unsigned int sum = 0;
         for (unsigned int i = 0; i < rvs.size(); i += 2) {

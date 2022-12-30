@@ -46,7 +46,7 @@ std::size_t shortest_path(const std::vector<std::string>& grid, const Point& sta
 
     auto visited = std::vector<std::vector<bool>>(num_rows, std::vector<bool>(num_cols, false));
     std::queue<std::pair<std::size_t, Point>> todo;
-    todo.emplace(std::make_pair(0, start));
+    todo.emplace(0, start);
 
     while (!todo.empty()) {
         const auto& [d, p] = todo.front();
@@ -62,7 +62,7 @@ std::size_t shortest_path(const std::vector<std::string>& grid, const Point& sta
         for (const auto& move : directions) {
             Point q = p + move;
             if (in_range(q) && in_reach(p, q)) {
-                todo.emplace(std::make_pair(d + 1, q));
+                todo.emplace(d + 1, q);
             }
         }
     }
@@ -90,14 +90,14 @@ int main() {
                     case 'S':
                         grid[i][j] = 'a';
                         start = Point(i, j);
-                        low_points.push_back(start);
+                        low_points.emplace_back(i, j);
                         break;
                     case 'E':
                         grid[i][j] = 'z';
                         dest = Point(i, j);
                         break;
                     case 'a':
-                        low_points.emplace_back(Point(i, j));
+                        low_points.emplace_back(i, j);
                         break;
                 }
             }

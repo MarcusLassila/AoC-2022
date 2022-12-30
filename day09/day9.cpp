@@ -1,4 +1,5 @@
 #include <array>
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -92,7 +93,7 @@ int sign(int x) {
 }
 
 template<unsigned int rope_length>
-int solve(const std::vector<std::pair<char, int>>& moves) {
+std::size_t solve(const std::vector<std::pair<char, int>>& moves) {
     std::array<Point, rope_length> rope;
     std::set<Point> visited = {rope.front()};
     static const std::map<char, Point> directions = {{'U', {-1, 0}}, {'R', {0, 1}},
@@ -128,7 +129,7 @@ int main() {
             char direction;
             int steps;
             iss >> direction >> steps;
-            moves.emplace_back(std::make_pair(direction, steps));
+            moves.emplace_back(direction, steps);
         }
         std::cout << file << ":\n";
         std::cout << "Answer part 1:  " << solve<short_rope_length>(moves) << '\n';

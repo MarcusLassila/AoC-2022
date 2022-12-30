@@ -134,7 +134,7 @@ int main() {
 
             Point scanner {x_a, y_a};
             Point beacon  {x_b, y_b};
-            scanner_beacon_pairs.emplace_back(std::make_pair(scanner, beacon));
+            scanner_beacon_pairs.emplace_back(scanner, beacon);
             beacon_map[beacon.y].insert(beacon.x);
         }
         std::vector<Interval> excluded = excluded_intervals(row, scanner_beacon_pairs);   
